@@ -2,6 +2,8 @@
 # Imports
 #----------------------------------------------------------------------------#
 
+import sys
+from datetime import datetime
 import json
 import dateutil.parser
 import babel
@@ -13,10 +15,10 @@ from flask_migrate import Migrate
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
+
 from forms import *
-from models import *
-from datetime import datetime
-import sys
+from db import db
+from models.utils import *
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -25,46 +27,8 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 
-db.init_app(app)
-
 # TODO: connect to a local postgresql database
 migrate = Migrate(app, db)
-
-#----------------------------------------------------------------------------#
-# Filters.
-#----------------------------------------------------------------------------#
-
-
-def venue_past_shows(venue_id):
-    return db.session.query(Show).filter(
-        Show.start_time < datetime.datetime.now(),
-        Show.venue_id == venue_id).all()
-
-
-def venue_upcoming_shows(venue_id):
-    return db.session.query(Show).filter(
-        Show.start_time > datetime.datetime.now(),
-        Show.venue_id == venue_id).all()
-
-
-def artist_past_shows(artist_id):
-    return db.session.query(Show).filter(
-        Show.start_time < datetime.datetime.now(),
-        Show.artist_id == artist_id).all()
-
-
-def artist_upcoming_shows(artist_id):
-    return db.session.query(Show).filter(
-        Show.start_time > datetime.datetime.now(),
-        Show.artist_id == artist_id).all()
-
-
-def get_venue_details(venue_id):
-    return Venue.query.get(venue_id)
-
-
-def get_artist_details(artist_id):
-    return Artist.query.get(artist_id)
 
 
 def format_datetime(value, format='medium'):
@@ -381,6 +345,7 @@ if not app.debug:
 
 # Default port:
 if __name__ == '__main__':
+    db.init_app(app)
     app.run()
 
 # Or specify port manually:
